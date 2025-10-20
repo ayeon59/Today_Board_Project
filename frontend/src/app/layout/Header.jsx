@@ -85,25 +85,18 @@ export default function Header() {
           {/* 상단 탭 영역 */}
           <div className="mb-3 space-y-1">
             <Link
+              to="/"
+              className="block rounded px-3 py-2 hover:bg-gray-100"
+              onClick={() => setOpen(false)}
+            >
+              메인 바로가기
+            </Link>
+            <Link
               to="/posts?tab=all"
               className="block rounded px-3 py-2 hover:bg-gray-100"
               onClick={() => setOpen(false)}
             >
               전체 게시글 보기
-            </Link>
-            <Link
-              to="/posts?tab=free"
-              className="block rounded px-3 py-2 hover:bg-gray-100"
-              onClick={() => setOpen(false)}
-            >
-              자유 게시판 보기
-            </Link>
-            <Link
-              to="/posts?tab=question"
-              className="block rounded px-3 py-2 hover:bg-gray-100"
-              onClick={() => setOpen(false)}
-            >
-              질문 게시판 보기
             </Link>
           </div>
 
