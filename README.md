@@ -21,25 +21,28 @@ UI는 **Tailwind CSS**를 사용해 빠르고 일관된 디자인을 제공합�
 
 ---
 
-## 📁 폴더 구조
+## 📁 현재 폴더 구조
 
 ```
-src/
- ┣ app/
- ┃ ┣ layout/
- ┃ ┗ router.jsx
- ┣ features/
- ┃ ┗ board/
- ┃   ┣ pages/        # BoardHome / BoardList / BoardDetail / BoardWrite
- ┃   ┣ components/   # PostCard / PostList / SearchBar / CommentItem 등
- ┃   ┣ api/          # posts.api.js / comments.api.js
- ┃   ┗ hooks/        # usePosts / useComments
- ┣ shared/
- ┃ ┣ components/     # Button / Modal / Input 등 공용 컴포넌트
- ┃ ┣ lib/            # http.js / queryClient.js 등
- ┃ ┣ utils/          # date.js / classNames 등
- ┃ ┗ styles/         # globals.css
- ┗ main.jsx
+Today_Board_Project/
+ ├─ frontend/             # React + Vite 프론트엔드
+ │   ├─ index.html
+ │   ├─ src/
+ │   │   ├─ app/
+ │   │   │   ├─ App.jsx
+ │   │   │   ├─ layout/
+ │   │   │   │   └─ Header.jsx
+ │   │   │   └─ main.jsx
+ │   │   ├─ features/
+ │   │   │   └─ auth/
+ │   │   │       ├─ LoginPage.jsx
+ │   │   │       └─ RegisterPage.jsx
+ │   │   └─ shared/styles/index.css
+ │   └─ package.json
+ └─ backend/              # NestJS 백엔드 (초기 세팅 완료)
+    ├─ src/
+    ├─ package.json
+     └─ tsconfig.json
 ```
 
 ---
