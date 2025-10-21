@@ -1,3 +1,4 @@
+@import "./stat-animations.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -21,4 +22,21 @@
 
 .heart-pop {
   animation: heart-pop 0.4s ease;
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-flow 8s ease-in-out infinite;
 }

@@ -1,8 +1,9 @@
 // src/features/board/pages/PostEditPage.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createPost, getPost, updatePost } from "../api/posts.api";
 import { useAuth } from "../../auth/state/AuthContext.jsx";
+import { uploadImage } from "../../../shared/api/uploads.api.js";
 
 const TITLE_MAX = 120;
 
@@ -18,9 +19,20 @@ export default function PostEditPage() {
     image: "",
   });
   const [filePreview, setFilePreview] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(Boolean(id));
   const [submitting, setSubmitting] = useState(false);
+  const previewUrlRef = useRef("");
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = "";
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -38,7 +50,12 @@ export default function PostEditPage() {
           content: res.content ?? "",
           image: res.image ?? "",
         });
+        if (previewUrlRef.current) {
+          URL.revokeObjectURL(previewUrlRef.current);
+          previewUrlRef.current = "";
+        }
         setFilePreview("");
+        setSelectedFile(null);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -57,7 +74,20 @@ export default function PostEditPage() {
   const onFile = (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      setError("이미지 파일만 업로드할 수 있습니다.");
+      e.target.value = "";
+      return;
+    }
+    setError("");
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = "";
+    }
     const url = URL.createObjectURL(f);
+    previewUrlRef.current = url;
+    setSelectedFile(f);
+    setForm((prev) => ({ ...prev, image: "" }));
     setFilePreview(url);
   };
 
@@ -80,11 +110,25 @@ export default function PostEditPage() {
     }
     setError("");
     setSubmitting(true);
+    let imageUrl = form.image.trim();
+    if (selectedFile) {
+      try {
+        const uploaded = await uploadImage(selectedFile, accessToken);
+        imageUrl = uploaded.url;
+      } catch (uploadErr) {
+        setError(
+          uploadErr.message ?? "이미지 업로드에 실패했습니다. 다시 시도해주세요.",
+        );
+        setSubmitting(false);
+        return;
+      }
+    }
+
     const payload = {
       boardType: form.boardType,
       title: form.title.trim(),
       content: form.content.trim(),
-      image: (filePreview || form.image || "").trim(),
+      image: imageUrl,
     };
     try {
       if (id) {
@@ -94,6 +138,12 @@ export default function PostEditPage() {
         const created = await createPost(accessToken, payload);
         navigate(`/posts/${created.id}`, { state: { from: "editor" } });
       }
+      setSelectedFile(null);
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = "";
+      }
+      setFilePreview("");
     } catch (err) {
       setError(err.message ?? "게시글 저장에 실패했습니다.");
     } finally {
@@ -180,6 +230,11 @@ export default function PostEditPage() {
               value={form.image}
               onChange={(e) => {
                 setForm((prev) => ({ ...prev, image: e.target.value }));
+                setSelectedFile(null);
+                if (previewUrlRef.current) {
+                  URL.revokeObjectURL(previewUrlRef.current);
+                  previewUrlRef.current = "";
+                }
                 setFilePreview("");
               }}
             />

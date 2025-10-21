@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 
 const BOARD_LABEL = { free: "자유게시판", question: "질문게시판" };
-const DEFAULT_POST_IMAGE = "/images/post-default.jpg";
+const DEFAULT_POST_IMAGE = "/images/placeholder-16x9.jpg";
 
 function formatDate(value) {
   if (!value) return "";
