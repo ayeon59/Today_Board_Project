@@ -8,6 +8,14 @@ import PostList from "../components/PostList";
 export default function MyPostsPage() {
   const { user, accessToken } = useAuth();
   const navigate = useNavigate();
+
+  {
+    /* 상태 관리 변수들
+     * loading : 페이지 로딩 여부 관리
+     * error : 에러 헨들러 처리 여부 관리
+     * items : 내가 쓴 게시글 리스트 배열 관리
+     */
+  }
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
