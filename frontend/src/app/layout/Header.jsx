@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../features/auth/state/AuthContext.jsx";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   // 로그인/회원가입 경로에서는 헤더 숨김
   const HIDE_ON = ["/login", "/register"];
@@ -35,18 +37,30 @@ export default function Header() {
 
           {/* 오른쪽: 액션 버튼 */}
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <button
-              type="button"
-              className="rounded-md border border-gray-300 px-3 py-1.5 font-medium transition hover:border-gray-400 hover:bg-gray-100"
-            >
-              Search
-            </button>
-            <Link
-              to="/login"
-              className="rounded-md bg-gray-900 px-3 py-1.5 font-medium text-white transition hover:bg-gray-800"
-            >
-              로그인 / 회원가입
-            </Link>
+            {user ? (
+              <>
+                <span className="rounded-md border border-gray-200 px-3 py-1.5 font-medium text-gray-700">
+                  {user.nickname}님
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    navigate("/");
+                  }}
+                  className="rounded-md bg-gray-900 px-3 py-1.5 font-medium text-white transition hover:bg-gray-800"
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="rounded-md bg-gray-900 px-3 py-1.5 font-medium text-white transition hover:bg-gray-800"
+              >
+                로그인 / 회원가입
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -107,7 +121,11 @@ export default function Header() {
             className="mt-1 rounded-md bg-gray-900 px-3 py-2 text-left text-sm font-medium text-white hover:opacity-90"
             onClick={() => {
               setOpen(false);
-              navigate("/myposts");
+              if (user) navigate("/myposts");
+              else
+                navigate("/login", {
+                  state: { from: "/myposts" },
+                });
             }}
           >
             내가 쓴 글 보기

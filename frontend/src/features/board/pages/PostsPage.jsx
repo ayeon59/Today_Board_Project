@@ -1,8 +1,10 @@
 // src/features/board/pages/PostsPage.jsx
-import { useMemo } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/state/AuthContext.jsx";
 import PostList from "../components/PostList";
 import SortFilter from "../components/SortFilter";
+import { listPosts } from "../api/posts.api";
 
 const TABS = [
   { key: "all", label: "전체" },
@@ -10,39 +12,49 @@ const TABS = [
   { key: "question", label: "질문" },
 ];
 
-// 더미 데이터
-const DUMMY = [
-  {
-    id: "p1",
-    boardType: "free",
-    title: "오늘 크래프톤 정글 꿀팁 공유합니다",
-    preview: "스터디 템플릿이랑 일정 관리 세팅...",
-    image: "/images/sample1.png",
-    likes: 12,
-    comments: 5,
-    author: "neo",
-    createdAt: "2025-10-20T10:00:00Z",
-  },
-  {
-    id: "p2",
-    boardType: "question",
-    title: "React 상태관리 가장 쉬운 방법 뭐죠?",
-    preview: "Redux vs Context vs Zustand 고민...",
-    image: "/images/sample2.png",
-    likes: 21,
-    comments: 14,
-    author: "trinity",
-    createdAt: "2025-10-20T09:00:00Z",
-  },
-];
+const DEFAULT_TAB = "all";
+const DEFAULT_SORT = "latest";
 
 export default function PostsPage() {
   const [sp, setSp] = useSearchParams();
   const navigate = useNavigate();
+  const { user, accessToken } = useAuth();
 
-  const tab = sp.get("tab") || "all"; // all|free|question
-  const sort = sp.get("sort") || "latest"; // latest|popular
+  const tab = sp.get("tab") || DEFAULT_TAB;
+  const sort = sp.get("sort") || DEFAULT_SORT;
   const q = sp.get("q") || "";
+
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [searchInput, setSearchInput] = useState(q);
+
+  useEffect(() => {
+    setSearchInput(q);
+  }, [q]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    listPosts({ tab, sort, q }, accessToken)
+      .then((res) => {
+        if (cancelled) return;
+        setItems(res ?? []);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err.message ?? "게시글을 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, sort, q, accessToken]);
 
   const setParam = (k, v) => {
     const next = new URLSearchParams(sp);
@@ -51,18 +63,16 @@ export default function PostsPage() {
     setSp(next, { replace: true });
   };
 
-  const filtered = useMemo(() => {
-    let arr = [...DUMMY];
-    if (tab !== "all") arr = arr.filter((p) => p.boardType === tab);
-    if (q)
-      arr = arr.filter((p) =>
-        (p.title + p.preview).toLowerCase().includes(q.toLowerCase())
-      );
-    if (sort === "popular")
-      arr.sort((a, b) => b.likes + b.comments - (a.likes + a.comments));
-    else arr.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-    return arr;
-  }, [tab, sort, q]);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setParam("q", searchInput.trim());
+  };
+
+  const emptyMessage = useMemo(() => {
+    if (loading) return "게시글을 불러오는 중입니다...";
+    if (error) return error;
+    return "게시글이 없습니다.";
+  }, [loading, error]);
 
   return (
     <div className="space-y-6">
@@ -73,7 +83,11 @@ export default function PostsPage() {
           <div className="flex gap-2">
             <button
               className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              onClick={() => navigate("/editor")}
+              onClick={() =>
+                user
+                  ? navigate("/editor")
+                  : navigate("/login", { state: { from: "/editor" } })
+              }
             >
               새 글 작성하기
             </button>
@@ -90,6 +104,34 @@ export default function PostsPage() {
           </div>
         </div>
       </div>
+
+      {/* 검색 */}
+      <form
+        onSubmit={handleSearch}
+        className="flex items-center gap-2 rounded border bg-white px-3 py-2"
+      >
+        <input
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="검색어를 입력하세요"
+          className="flex-1 text-sm outline-none"
+        />
+        <button
+          type="submit"
+          className="rounded bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+        >
+          검색
+        </button>
+        {q && (
+          <button
+            type="button"
+            onClick={() => setParam("q", "")}
+            className="text-xs text-gray-500 hover:text-gray-700"
+          >
+            초기화
+          </button>
+        )}
+      </form>
 
       {/* 탭 */}
       <div className="flex gap-2 border-b pb-2">
@@ -112,7 +154,17 @@ export default function PostsPage() {
       </div>
 
       {/* 리스트 */}
-      <PostList items={filtered} />
+      {loading ? (
+        <div className="rounded border bg-white p-6 text-center text-sm text-gray-500">
+          불러오는 중...
+        </div>
+      ) : error ? (
+        <div className="rounded border border-red-200 bg-red-50 p-6 text-center text-sm text-red-600">
+          {error}
+        </div>
+      ) : (
+        <PostList items={items} emptyMessage={emptyMessage} />
+      )}
     </div>
   );
 }
