@@ -21,28 +21,67 @@ UI는 **Tailwind CSS**를 사용해 빠르고 일관된 디자인을 제공합�
 
 ---
 
-## 📁 현재 폴더 구조
+## 📁 프로젝트 구조
+
+### Frontend (`frontend/`)
 
 ```
-Today_Board_Project/
- ├─ frontend/             # React + Vite 프론트엔드
- │   ├─ index.html
- │   ├─ src/
- │   │   ├─ app/
- │   │   │   ├─ App.jsx
- │   │   │   ├─ layout/
- │   │   │   │   └─ Header.jsx
- │   │   │   └─ main.jsx
- │   │   ├─ features/
- │   │   │   └─ auth/
- │   │   │       ├─ LoginPage.jsx
- │   │   │       └─ RegisterPage.jsx
- │   │   └─ shared/styles/index.css
- │   └─ package.json
- └─ backend/              # NestJS 백엔드 (초기 세팅 완료)
-    ├─ src/
-    ├─ package.json
-     └─ tsconfig.json
+frontend/
+ ├─ public/                       # 정적 자산
+ ├─ src/
+ │   ├─ app/                      # 앱 엔트리 및 레이아웃
+ │   │   ├─ main.jsx
+ │   │   ├─ router.jsx
+ │   │   └─ layout/
+ │   │       ├─ AppLayout.jsx
+ │   │       ├─ Header.jsx
+ │   │       └─ NavTabs.jsx
+ │   ├─ features/
+ │   │   ├─ auth/                 # 인증 관련 화면/상태
+ │   │   │   ├─ api/auth.api.js
+ │   │   │   ├─ components/RequireAuth.jsx
+ │   │   │   ├─ pages/{LoginPage,RegisterPage}.jsx
+ │   │   │   └─ state/AuthContext.jsx
+ │   │   └─ board/                # 게시판 기능
+ │   │       ├─ api/{posts,comments}.api.js
+ │   │       ├─ components/{PostList,PostItemRow,StatCard,...}.jsx
+ │   │       └─ pages/{BoardHome,PostsPage,MyPostsPage,...}.jsx
+ │   └─ shared/                   # 공통 유틸 및 스타일
+ │       ├─ api/{client,uploads}.js
+ │       ├─ components/
+ │       └─ styles/{index,stat-animations}.css
+ ├─ index.html
+ └─ vite.config.js
+```
+
+### Backend (`backend/`)
+
+```
+backend/
+ ├─ prisma/                       # Prisma 스키마 및 서비스
+ │   ├─ schema.prisma
+ │   ├─ prisma.service.ts
+ │   └─ migrations/
+ ├─ src/
+ │   ├─ main.ts                   # Nest 부트스트랩
+ │   ├─ app.module.ts
+ │   ├─ auth/                     # JWT 인증 모듈
+ │   │   ├─ auth.controller.ts
+ │   │   ├─ auth.service.ts
+ │   │   ├─ dto/{login,register,auth-response}.dto.ts
+ │   │   └─ jwt-auth.guard.ts 등
+ │   ├─ posts/                    # 게시글 도메인
+ │   │   ├─ posts.controller.ts
+ │   │   ├─ posts.service.ts
+ │   │   ├─ dto/{create-post,update-post,post-response}.dto.ts
+ │   │   └─ entities/
+ │   ├─ comments/                 # 댓글 도메인
+ │   │   ├─ comments.controller.ts
+ │   │   └─ dto/
+ │   └─ uploads/                  # 업로드 모듈
+ ├─ uploads/                      # 업로드된 파일 저장소
+ ├─ package.json
+ └─ tsconfig.json
 ```
 
 ---
