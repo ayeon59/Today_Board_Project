@@ -4,22 +4,25 @@
 
 ## 🚀 프로젝트 개요
 
-이 프로젝트는 React 기반의 게시판 웹 애플리케이션으로,
-UI는 **Tailwind CSS**를 사용해 빠르고 일관된 디자인을 제공합니다.
+React + NestJS 기반의 게시판 애플리케이션입니다. 게시글과 댓글 CRUD, 좋아요, 통계 위젯, 마이페이지 등 커뮤니티 운영에 필요한 핵심 기능을 제공합니다. 프론트엔드는 Vite 기반 SPA로 Tailwind CSS를 사용해 일관된 UI를 제공하며, 백엔드는 NestJS + Prisma 조합으로 PostgreSQL을 사용합니다.
 
----
+## 💡 주요 기능
 
-## 기술 스택
+- **게시판 홈 대시보드**: 전체 글 수, 좋아요 수, 댓글 수, 오늘의 인기 글 카드 제공
+- **게시글 관리**: 목록/검색/정렬, 상세 조회, 작성·수정·삭제, 이미지 업로드, 좋아요 토글
+- **댓글 시스템**: 권한 체크 기반 댓글 작성/삭제, 비회원도 열람 가능한 댓글 목록
+- **인증/인가**: JWT 기반 로그인·회원가입, 내 게시글 목록 등 보호된 API
+- **반응형 UI**: Tailwind CSS와 재사용 가능한 컴포넌트로 데스크톱/모바일 대응
 
-| 영역                 | 기술                                       |
-| -------------------- | ------------------------------------------ |
-| **Frontend**         | React (Vite), React Router, Tailwind CSS   |
-| **State Management** | React Hooks / Context API                  |
-| **Data Layer**       | JSON 기반 Mock API (추후 NestJS 연동 예정) |
-| **Build Tool**       | Vite                                       |
-| **Version Control**  | Git / GitHub                               |
+## 🛠️ 기술 스택
 
----
+| 영역            | 기술                                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**    | React (Vite), React Router, Tailwind CSS, Context API                                                                                |
+| **Backend**     | NestJS, Prisma, Passport JWT, Class Validator                                                                                        |
+| **Database**    | PostgreSQL                                                                                                                            |
+| **Build / Dev** | Vite, Nest CLI, ESLint, Prettier                                                                                                     |
+| **Infra**       | .env 기반 환경 분리, Prisma Migration, 업로드 디렉터리(Local)                                                                        |
 
 ## 📁 프로젝트 구조
 
@@ -30,26 +33,8 @@ frontend/
  ├─ public/                       # 정적 자산
  ├─ src/
  │   ├─ app/                      # 앱 엔트리 및 레이아웃
- │   │   ├─ main.jsx
- │   │   ├─ router.jsx
- │   │   └─ layout/
- │   │       ├─ AppLayout.jsx
- │   │       ├─ Header.jsx
- │   │       └─ NavTabs.jsx
- │   ├─ features/
- │   │   ├─ auth/                 # 인증 관련 화면/상태
- │   │   │   ├─ api/auth.api.js
- │   │   │   ├─ components/RequireAuth.jsx
- │   │   │   ├─ pages/{LoginPage,RegisterPage}.jsx
- │   │   │   └─ state/AuthContext.jsx
- │   │   └─ board/                # 게시판 기능
- │   │       ├─ api/{posts,comments}.api.js
- │   │       ├─ components/{PostList,PostItemRow,StatCard,...}.jsx
- │   │       └─ pages/{BoardHome,PostsPage,MyPostsPage,...}.jsx
- │   └─ shared/                   # 공통 유틸 및 스타일
- │       ├─ api/{client,uploads}.js
- │       ├─ components/
- │       └─ styles/{index,stat-animations}.css
+ │   ├─ features/                 # 도메인별 UI + 상태
+ │   └─ shared/                   # 공용 API, 컴포넌트, 스타일
  ├─ index.html
  └─ vite.config.js
 ```
@@ -58,59 +43,126 @@ frontend/
 
 ```
 backend/
- ├─ prisma/                       # Prisma 스키마 및 서비스
- │   ├─ schema.prisma
- │   ├─ prisma.service.ts
- │   └─ migrations/
+ ├─ prisma/                       # Prisma 스키마, 서비스, 마이그레이션
  ├─ src/
- │   ├─ main.ts                   # Nest 부트스트랩
- │   ├─ app.module.ts
  │   ├─ auth/                     # JWT 인증 모듈
- │   │   ├─ auth.controller.ts
- │   │   ├─ auth.service.ts
- │   │   ├─ dto/{login,register,auth-response}.dto.ts
- │   │   └─ jwt-auth.guard.ts 등
- │   ├─ posts/                    # 게시글 도메인
- │   │   ├─ posts.controller.ts
- │   │   ├─ posts.service.ts
- │   │   ├─ dto/{create-post,update-post,post-response}.dto.ts
- │   │   └─ entities/
- │   ├─ comments/                 # 댓글 도메인
- │   │   ├─ comments.controller.ts
- │   │   └─ dto/
- │   └─ uploads/                  # 업로드 모듈
+ │   ├─ posts/                    # 게시글 CRUD + 통계
+ │   ├─ comments/                 # 댓글 CRUD
+ │   └─ uploads/                  # 파일 업로드 모듈
  ├─ uploads/                      # 업로드된 파일 저장소
- ├─ package.json
- └─ tsconfig.json
+ └─ package.json
 ```
 
-#### Backend 주요 파일/폴더 요약
+### 주요 백엔드 엔드포인트
 
-- `backend/src/main.ts` : NestJS 애플리케이션 부트스트랩과 전역 파이프/필터 설정.
-- `backend/src/app.module.ts` : 루트 모듈, 각 도메인 모듈과 Prisma 모듈을 묶어줌.
-- `backend/src/auth` : JWT 인증 전체 흐름 (컨트롤러, 서비스, 가드, DTO).
-- `backend/src/posts` : 게시글 CRUD 및 좋아요 토글 로직.
-  - `posts.controller.ts` : `/posts` 엔드포인트 라우팅과 가드/데코레이터 설정으로 요청을 서비스에 전달.
-  - `posts.service.ts` : Prisma를 이용해 게시글 데이터를 조회/수정하고 DTO로 응답을 조립.
-- `backend/src/comments` : 댓글 API 컨트롤러와 DTO.
-- `backend/src/uploads` : 파일 업로드 처리 모듈.
-- `backend/prisma/schema.prisma` : 데이터베이스 모델 정의.
-- `backend/uploads/` : 실제 업로드 파일이 저장되는 디렉터리.
+| 영역      | Method | Path                        | 설명                         | 인증 |
+| --------- | ------ | --------------------------- | ---------------------------- | ---- |
+| Auth      | POST   | `/auth/register`            | 회원가입                     | -    |
+|           | POST   | `/auth/login`               | 로그인                       | -    |
+|           | GET    | `/auth/profile`             | 로그인 사용자 정보 조회      | 🔐   |
+| Posts     | GET    | `/posts`                    | 게시글 목록 (필터/검색 지원) | 🔓/🔐 |
+|           | GET    | `/posts/summary`            | 홈 대시보드 데이터           | 🔓/🔐 |
+|           | GET    | `/posts/me/list`            | 내 게시글 목록               | 🔐   |
+|           | GET    | `/posts/:id`                | 게시글 상세                  | 🔓/🔐 |
+|           | POST   | `/posts`                    | 게시글 작성                  | 🔐   |
+|           | PATCH  | `/posts/:id`                | 게시글 수정                  | 🔐   |
+|           | DELETE | `/posts/:id`                | 게시글 삭제                  | 🔐   |
+|           | POST   | `/posts/:id/like`           | 좋아요 토글                  | 🔐   |
+| Comments  | GET    | `/posts/:postId/comments`   | 댓글 목록                    | 🔓/🔐 |
+|           | POST   | `/posts/:postId/comments`   | 댓글 작성                    | 🔐   |
+|           | DELETE | `/posts/:postId/comments/:commentId` | 댓글 삭제        | 🔐   |
 
-#### Posts 모듈 핵심 함수 개요
+## ✅ 시작하기
 
-- `posts.controller.ts` 메서드들  
-  `/posts` 라우트의 핸들러들(`list`, `summary`, `listMine`, `detail`, `create`, `update`, `remove`, `toggleLike`). 전부 Nest 데코레이터로 HTTP 메서드·경로·가드를 지정하고, `PostsService`의 대응 함수 결과를 그대로 반환하는 비동기 함수입니다.
+### 1. 사전 준비
 
-- `posts.service.ts` 메서드들  
-  `findAll`, `findOne`, `findMine`, `create`, `update`, `remove`, `toggleLike`, `getHomeSummary` 등이 Prisma ORM으로 DB를 조작합니다. 모든 메서드는 `async/await` 패턴을 공유하며, 권한 검사와 DTO 변환을 포함해 컨트롤러가 사용할 최종 데이터를 준비합니다.
+- Node.js 20.x 이상
+- npm 10.x 이상
+- PostgreSQL 14 이상 (로컬 또는 클라우드 인스턴스)
 
----
+### 2. 저장소 클론 및 의존성 설치
 
-## 💡 주요 기능
+```bash
+git clone <REPOSITORY_URL>
+cd Today_Board_Project
 
-- **게시판 홈**
-  - 전체 글 수, 좋아요 수, 댓글 수 통계 표시
-  - 전체 게시판 중 오늘 하루 가장 핫한 게시판 글 표시
+# Frontend
+cd frontend
+npm install
 
----
+# Backend
+cd ../backend
+npm install
+```
+
+### 3. 환경 변수 설정
+
+#### Frontend (`frontend/.env`)
+
+```
+VITE_API_URL=http://localhost:3000
+```
+
+#### Backend (`backend/.env`)
+
+```
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/today_board?schema=public"
+JWT_SECRET="change-me"
+JWT_EXPIRES_IN="7d"
+```
+
+> 기본 `.env` 파일이 이미 존재합니다. 환경에 맞게 값을 수정하세요.
+
+### 4. 데이터베이스 마이그레이션
+
+```bash
+cd backend
+npx prisma migrate deploy
+```
+
+필요 시 Prisma Studio로 데이터 확인이 가능합니다.
+
+```bash
+npx prisma studio
+```
+
+### 5. 로컬 개발 서버 실행
+
+#### Backend
+
+```bash
+cd backend
+npm run start:dev   # http://localhost:3000
+```
+
+#### Frontend
+
+```bash
+cd frontend
+npm run dev         # http://localhost:5173 (기본값)
+```
+
+프론트엔드 `.env`의 `VITE_API_URL`이 백엔드 주소와 일치하도록 설정하세요.
+
+## 🧪 테스트 & 린트
+
+| 영역      | 명령어                | 설명                    |
+| --------- | --------------------- | ----------------------- |
+| Frontend  | `npm run lint`        | ESLint 규칙 점검        |
+| Backend   | `npm run test`        | 단위 테스트 실행        |
+| Backend   | `npm run lint`        | NestJS ESLint 검사      |
+| Backend   | `npm run test:e2e`    | E2E 테스트 (구성 시)    |
+
+## 📦 배포 참고
+
+- 백엔드는 `npm run build` 후 `npm run start:prod`로 실행합니다.
+- Prisma 마이그레이션은 배포 파이프라인에서 `npx prisma migrate deploy`로 반영합니다.
+- 업로드 파일은 `backend/uploads/` 경로를 사용하므로, 배포 환경에서 해당 디렉터리의 영속성 확보가 필요합니다.
+
+## 📚 추가 참고 자료
+
+- Tailwind 구성: `frontend/tailwind.config.js`
+- 공통 API 클라이언트: `frontend/src/shared/api/client.js`
+- Prisma 스키마: `backend/prisma/schema.prisma`
+
+모든 기능이 정상 동작하는지 마지막으로 확인하고 필요한 설정은 위 내용을 참고해 마무리하세요.
