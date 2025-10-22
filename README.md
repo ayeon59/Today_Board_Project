@@ -24,7 +24,7 @@ React + NestJS 기반의 게시판 애플리케이션입니다. 게시글과 댓
 | **Build / Dev** | Vite, Nest CLI, ESLint, Prettier                                                                                                     |
 | **Infra**       | .env 기반 환경 분리, Prisma Migration, 업로드 디렉터리(Local)                                                                        |
 
-## 아키텍처
+## 🛠️ 아키텍처
 
 <img width="880" height="481" alt="스크린샷 2025-10-23 오전 12 17 22" src="https://github.com/user-attachments/assets/6e54c265-893b-44c7-a268-b74a46f7d418" />
 
