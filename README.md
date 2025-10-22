@@ -84,6 +84,27 @@ backend/
  └─ tsconfig.json
 ```
 
+#### Backend 주요 파일/폴더 요약
+
+- `backend/src/main.ts` : NestJS 애플리케이션 부트스트랩과 전역 파이프/필터 설정.
+- `backend/src/app.module.ts` : 루트 모듈, 각 도메인 모듈과 Prisma 모듈을 묶어줌.
+- `backend/src/auth` : JWT 인증 전체 흐름 (컨트롤러, 서비스, 가드, DTO).
+- `backend/src/posts` : 게시글 CRUD 및 좋아요 토글 로직.
+  - `posts.controller.ts` : `/posts` 엔드포인트 라우팅과 가드/데코레이터 설정으로 요청을 서비스에 전달.
+  - `posts.service.ts` : Prisma를 이용해 게시글 데이터를 조회/수정하고 DTO로 응답을 조립.
+- `backend/src/comments` : 댓글 API 컨트롤러와 DTO.
+- `backend/src/uploads` : 파일 업로드 처리 모듈.
+- `backend/prisma/schema.prisma` : 데이터베이스 모델 정의.
+- `backend/uploads/` : 실제 업로드 파일이 저장되는 디렉터리.
+
+#### Posts 모듈 핵심 함수 개요
+
+- `posts.controller.ts` 메서드들  
+  `/posts` 라우트의 핸들러들(`list`, `summary`, `listMine`, `detail`, `create`, `update`, `remove`, `toggleLike`). 전부 Nest 데코레이터로 HTTP 메서드·경로·가드를 지정하고, `PostsService`의 대응 함수 결과를 그대로 반환하는 비동기 함수입니다.
+
+- `posts.service.ts` 메서드들  
+  `findAll`, `findOne`, `findMine`, `create`, `update`, `remove`, `toggleLike`, `getHomeSummary` 등이 Prisma ORM으로 DB를 조작합니다. 모든 메서드는 `async/await` 패턴을 공유하며, 권한 검사와 DTO 변환을 포함해 컨트롤러가 사용할 최종 데이터를 준비합니다.
+
 ---
 
 ## 💡 주요 기능
