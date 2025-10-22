@@ -1,6 +1,7 @@
 import { apiRequest } from "../../../shared/api/client";
-
+/* 프론트에서 백엔드로 보내는 모든 게시글 관련 요청 */
 export async function listPosts(params = {}, token) {
+  // quey에 게시글 관련 정보 및 토큰 받아옴
   return apiRequest("/posts", { query: params, token });
 }
 
