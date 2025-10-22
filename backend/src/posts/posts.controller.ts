@@ -24,10 +24,13 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   /* 비회원이거나 회원인 경우가 아니면 접속 막아버림 */
+  /* JWT 토큰이 있으면 사용자 정보를 없어도 비회원 요청 처리하는 선택적 인증 가드*/
   @UseGuards(JwtOptionalAuthGuard)
   @Get()
   list(
+    // query 스트링을 QueryPostDto 형태로 변환해서 query 라는 매개변수로 주입해라
     @Query() query: QueryPostsDto,
+    // user 스트링을 사용자 정보를 받는 형태 또는 null로 변환해서 query 라는 매개변수로 주입해라
     @CurrentUserOptional() user: AuthUserDto | null,
   ) {
     const { tab = 'all', q, sort = 'latest' } = query;

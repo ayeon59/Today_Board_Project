@@ -87,22 +87,40 @@ export class PostsService {
     return this.toPostDto(post, liked);
   }
 
+  /* async : 비동기 함수 키워드로 await를 쓸 수 있고 항상 Promise를 반환
+   * 즉, 문자열로 된 userID를 받아서 PostResponseDto 객체들의 배열을 Promise하겠다.
+   */
+
   async findMine(userId: string): Promise<PostResponseDto[]> {
     const posts = await this.prisma.post.findMany({
+      // 여러 글 중 해당 사용자가 작성한 글만
       where: { authorId: userId },
+      // 'desc' 내림차순으로 최신 글이 배열 앞쪽에 오도록
       orderBy: [{ createdAt: 'desc' }],
+      // 관련된 추가 필드를 가져와라 -> 작성자 정보, 집계 데이터
       include: this.postInclude,
     });
+
+    // API는 다른 엔드포인트에 기대지 않고 자기 호출만으로도 완성된 데이터를 내려야 함
+    // 즉 내가 쓴 글 보드에서도 상세 페이지를 볼 수 있고 그럼 내가 좋아요 누른지는 확인되어야 함
+    // 그래서 여기서도 myLike를 확인하는 것
     const likedIds =
+      // 즉, 내가 쓴 글이 없다면 해당 보드에서 상세페이지를 읽을 필요가 없으니까
+      // likes 테이블에서 조건에 맞는 레코드들을 비동기 조회
       posts.length > 0
         ? new Set(
             (
               await this.prisma.like.findMany({
+                // like 안에는 현재 사용자가 좋아요를 누른 모든 정보가 담김
+                // 이중에서 사용자가 작성한 글 중 사용자가 좋아요를 누른 정보만 찾아야 함
+                // posts 배열을 돌면서 각 요소 post 중 id만 뽑아내서 postId 로 사용
+                // where : findMan가 어떤 레코드를 고를지 결정하는 필터 조건
                 where: { userId, postId: { in: posts.map((post) => post.id) } },
+                // select : 고른 레코드에서 어떤 필드를 가져올 지
                 select: { postId: true },
               })
             ).map((like) => like.postId),
-          )
+          ) //like 객체에서 postId "값"만 꺼내서 새로운 배열에 넣어라
         : new Set<string>();
     return posts.map((post) => this.toPostDto(post, likedIds.has(post.id)));
   }

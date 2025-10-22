@@ -94,6 +94,7 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// React에서 전역 인증 상태를 읽기 위해 만든 커스텀 훅
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
